@@ -5,8 +5,11 @@ library(ggpubr)
 library(lubridate)
 library(mirt)
 library(ggmirt)
-setwd("/Volumes/GoogleDrive/My Drive/0. Projects - Stanford/ROAR/")
-df= read_csv("PA data/roar_pa_trialdata.csv")
+library(here)
+setwd("/Users/radhika/Library/CloudStorage/GoogleDrive-rkap786@stanford.edu/My Drive/0. Projects - Stanford/ROAR")
+here::here()
+source(here("ROAR/PA/ROAR","imv.binary.R"))
+df= read_csv("PA/roar_pa_trialdata.csv")
 df = df[,-1]
 df = df |> mutate(removed = ifelse(is.na(removed), 0, removed)) |>
   rename(item= itemId)
