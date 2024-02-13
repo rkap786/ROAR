@@ -137,7 +137,6 @@ imv.binary(probs$correct,probs$pr_u,probs$pr_m)
 (rbind("3F"=m2_m, "1F"=m2_u) |> t() |>round(4))[c(1,4,8,9),]
 
 ### Separate unidimensional models for each subscale
-
 resp_del = df    |> filter(block=="DEL") |>  getrespmatrix()
 resp_fsm = df |> filter(block=="FSM")  |>  getrespmatrix()
 resp_lsm = df  |> filter(block=="LSM") |>  getrespmatrix()
@@ -198,6 +197,44 @@ th_bf_Rasch= fscores(bfactormod_Rasch,  QMC=TRUE)
 
 summary(bfactormod)
 
+
+## Evaluate fit
+#itemplot(bfactormod, 1, drop.zeros = TRUE)
+#itemfit(bfactormod, QMC=TRUE)
+M2(bfactormod, QMC=TRUE)
+M2(bfactormod_Rasch, QMC=TRUE)
+## Check fit stats
+anova(model_unidim, bfactormod)
+anova(bfactormod_2pl, bfactormod_Rasch) #very similar
+
+#probs=probs |> dplyr::select(-pr_bf)
+
+## Using 2PL bifactor
+
+p_bf = data.frame(probtrace(bfactormod, th_bf)) |>
+  dplyr::select(contains("P.1")) |>
+  mutate(subj = df_resp$subj) |>
+  pivot_longer(
+    cols=contains("P.1"),
+    names_to = "item",
+    values_to = "pr_bf"
+  ) |>
+  mutate(item= str_remove(item, ".P.1"))
+
+probs = left_join(probs,p_bf)
+
+### Correlation between abilities
+cor(probs$pr_u, probs$pr_bf)
+cor(probs$pr_m, probs$pr_bf)
+
+
+## Fit
+
+imv.binary(probs$correct,probs$pr0,probs$pr_bf)
+imv.binary(probs$correct,probs$pr_u,probs$pr_bf)
+imv.binary(probs$correct,probs$pr_m,probs$pr_bf)
+
+
 ## Compare ability scores
 ### Method 1: take general score as general score, and specific as subscale score
 ### Remember that specific factor 1 is FSM, specific factor 2 is LSM, 
@@ -243,47 +280,14 @@ th_fsm4= wt_fsm_sp*th_bf[,2]+wt_general*th_bf[,1]
 th_lsm4= wt_lsm_sp*th_bf[,3]+wt_general*th_bf[,1]
 th_del4= wt_del_sp*th_bf[,4]+wt_general*th_bf[,1]
 
-cor(th_fsm4,th_fsm)
+cor(th_fsm4,th_u)
 cor(th_lsm4,th_lsm)
 cor(th_del4,th_del)
 
+cor(th_fsm, th_del)
+cor(th_fsm, th_lsm)
 
 
-## Evaluate fit
-#itemplot(bfactormod, 1, drop.zeros = TRUE)
-#itemfit(bfactormod, QMC=TRUE)
-M2(bfactormod, QMC=TRUE)
-M2(bfactormod_Rasch, QMC=TRUE)
-## Check fit stats
-anova(model_unidim, bfactormod)
-anova(bfactormod_2pl, bfactormod_Rasch) #very similar
-
-#probs=probs |> dplyr::select(-pr_bf)
-
-## Using 2PL bifactor
-
-p_bf = data.frame(probtrace(bfactormod, th_bf)) |>
-  dplyr::select(contains("P.1")) |>
-  mutate(subj = df_resp$subj) |>
-  pivot_longer(
-    cols=contains("P.1"),
-    names_to = "item",
-    values_to = "pr_bf"
-  ) |>
-  mutate(item= str_remove(item, ".P.1"))
-
-probs = left_join(probs,p_bf)
-
-### Correlation between abilities
-cor(probs$pr_u, probs$pr_bf)
-cor(probs$pr_m, probs$pr_bf)
-
-
-## Fit
-
-imv.binary(probs$correct,probs$pr0,probs$pr_bf)
-imv.binary(probs$correct,probs$pr_u,probs$pr_bf)
-imv.binary(probs$correct,probs$pr_m,probs$pr_bf)
 
 ### Trying other loadings for bifactor
 # 
