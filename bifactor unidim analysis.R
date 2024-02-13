@@ -84,7 +84,7 @@ guess=rep(0.3,74)
 
 bfactormod <- bfactor(df_resp[-1], model=specific, 
                       quadpts = 9, TOL = 1e-3,
-                      guess=guess)
+                      guess=guess) #itemtype default is 2PL
 coef = coef(bfactormod, simplify=T)$items
 th_bf= fscores(bfactormod,  QMC=TRUE)
 p_bf = data.frame(probtrace(bfactormod, th_bf)) |>
@@ -140,10 +140,10 @@ cor(th_del2,th_del) #0.961
 
 ### Method 3: weight scores using discrimination
 ## Overall score weights
-wt_general= sum(coef_2PL[,1])/ (sum(colSums(coef_2PL)[1:4]) )
-wt_fsm= sum(coef_2PL[1:25,1])/ (sum(colSums(coef_2PL)[1:4]) )
-wt_lsm= sum(coef_2PL[26:50,1])/ (sum(colSums(coef_2PL)[1:4]) )
-wt_del= sum(coef_2PL[51:74,1])/ (sum(colSums(coef_2PL)[1:4]) )
+wt_general= sum(coef[,1])/ (sum(colSums(coef)[1:4]) )
+wt_fsm= sum(coef[1:25,1])/ (sum(colSums(coef)[1:4]) )
+wt_lsm= sum(coef[26:50,1])/ (sum(colSums(coef)[1:4]) )
+wt_del= sum(coef[51:74,1])/ (sum(colSums(coef)[1:4]) )
 
 th_bf_overall2= wt_general*th_bf[,1] + wt_fsm*th_bf[,2] + wt_lsm*th_bf[,3] +
   wt_del*th_bf[,4]
@@ -151,9 +151,9 @@ th_bf_overall2= wt_general*th_bf[,1] + wt_fsm*th_bf[,2] + wt_lsm*th_bf[,3] +
 cor(th_u,th_bf_overall2) # 0.98
 
 ## Specific domain weights
-wt_fsm_sp= sum(coef_2PL[1:25,2])/ (sum(coef_2PL[1:25,2]) +sum(coef_2PL[1:25,1]))
-wt_lsm_sp= sum(coef_2PL[26:50,3])/ (sum(coef_2PL[1:25,3]) +sum(coef_2PL[1:25,1]))
-wt_del_sp= sum(coef_2PL[51:74,4])/ (sum(coef_2PL[1:25,4]) +sum(coef_2PL[1:25,1]))
+wt_fsm_sp= sum(coef[1:25,2])/ (sum(coef[1:25,2]) +sum(coef[1:25,1]))
+wt_lsm_sp= sum(coef[26:50,3])/ (sum(coef[1:25,3]) +sum(coef[1:25,1]))
+wt_del_sp= sum(coef[51:74,4])/ (sum(coef[1:25,4]) +sum(coef[1:25,1]))
 
 th_fsm4= wt_fsm_sp*th_bf[,2]+wt_general*th_bf[,1]
 th_lsm4= wt_lsm_sp*th_bf[,3]+wt_general*th_bf[,1]
