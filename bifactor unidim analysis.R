@@ -116,6 +116,7 @@ imv.binary(probs$correct,probs$pr_u,probs$pr_bf)
 ######### specific factor 3 is DEL
 
 ## Compare bifactor and unidimensional models
+## Compare dimension thetas directly
 cor(probs$pr_u,probs$pr_bf) #0.87
 cor(th_bf[,1],th_u) #0.92
 
@@ -126,6 +127,7 @@ cor(th_del,th_bf[,4]) #0.72
 
 
 ### Method 2: take general score as general score + sum of all specific scores, and specific as subscale score
+# Bifactor M2 from paper
 th_bf_overall= rowSums(th_bf)
 cor(th_u,th_bf_overall) # about the same, 0.94
 
@@ -139,9 +141,10 @@ cor(th_del2,th_del) #0.961
 
 
 ### Method 3: weight scores using discrimination
-## Overall score weights
-wt_general= sum(coef[,1])/ (sum(colSums(coef)[1:4]) )
-wt_fsm= sum(coef[1:25,1])/ (sum(colSums(coef)[1:4]) )
+## Overall score weights - bifactor M4
+wt_general= sum(coef[,1])/ (sum(colSums(coef)[1:4]) ) 
+#all general discrim params divided by all general + specific
+wt_fsm= sum(coef[1:25,1])/ (sum(colSums(coef)[1:4]) ) #only general FSM params
 wt_lsm= sum(coef[26:50,1])/ (sum(colSums(coef)[1:4]) )
 wt_del= sum(coef[51:74,1])/ (sum(colSums(coef)[1:4]) )
 
@@ -150,10 +153,10 @@ th_bf_overall2= wt_general*th_bf[,1] + wt_fsm*th_bf[,2] + wt_lsm*th_bf[,3] +
 
 cor(th_u,th_bf_overall2) # 0.98
 
-## Specific domain weights
+## Specific domain weights - bifactor M4 in paper
 wt_fsm_sp= sum(coef[1:25,2])/ (sum(coef[1:25,2]) +sum(coef[1:25,1]))
-wt_lsm_sp= sum(coef[26:50,3])/ (sum(coef[1:25,3]) +sum(coef[1:25,1]))
-wt_del_sp= sum(coef[51:74,4])/ (sum(coef[1:25,4]) +sum(coef[1:25,1]))
+wt_lsm_sp= sum(coef[26:50,3])/ (sum(coef[26:50,3]) +sum(coef[26:50,1]))
+wt_del_sp= sum(coef[51:74,4])/ (sum(coef[51:74,4]) +sum(coef[51:74,1]))
 
 th_fsm4= wt_fsm_sp*th_bf[,2]+wt_general*th_bf[,1]
 th_lsm4= wt_lsm_sp*th_bf[,3]+wt_general*th_bf[,1]
