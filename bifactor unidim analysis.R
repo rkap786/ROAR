@@ -44,6 +44,9 @@ n_distinct(resp_lsm$subj)
 model_unidim= mirt(df_resp[,-1],1,  itemtype = 'Rasch', guess=0.3)
 #m2_u= M2(model_unidim)
 th_u= fscores(model_unidim)
+th_u_se= fscores(model_unidim,full.scores.SE=TRUE)
+
+
 p_u=data.frame(probtrace(model_unidim, th_u)) |>
   dplyr::select(contains("P.1")) |>
   mutate(subj = df_resp$subj) |>
@@ -67,14 +70,17 @@ probs = left_join(resp_mean,p_u)
 ### Unidimesnionalfor subscales
 m_fsm= mirt(resp_fsm[-1],1,  itemtype = 'Rasch', guess=0.3)
 th_fsm= fscores(m_fsm)
+th_fsm_se= fscores(m_fsm,full.scores.SE=TRUE)
 
 #resp_del = df_resp_DEL |> dplyr::filter(item!="DEL_3") |> getrespmatrix()
 m_del= mirt(resp_del[-1],1,  itemtype = 'Rasch', guess=0.3)
 th_del= fscores(m_del)
+th_del_se= fscores(m_del,full.scores.SE=TRUE)
 
 #resp_lsm = df_resp_LSM |>  getrespmatrix()
 m_lsm= mirt(resp_lsm[-1],1,  itemtype = 'Rasch', guess=0.3)
 th_lsm= fscores(m_lsm)
+th_lsm_se= fscores(m_lsm,full.scores.SE=TRUE)
 
 ################## Bifactor
 ## First set is FSM, second set is LSM, third set is DEL
@@ -87,6 +93,7 @@ bfactormod <- bfactor(df_resp[-1], model=specific,
                       guess=guess) #itemtype default is 2PL
 coef = coef(bfactormod, simplify=T)$items
 th_bf= fscores(bfactormod,  QMC=TRUE)
+th_bf_se= fscores(bfactormod,  QMC=TRUE,full.scores.SE=T)
 p_bf = data.frame(probtrace(bfactormod, th_bf)) |>
   dplyr::select(contains("P.1")) |>
   mutate(subj = df_resp$subj) |>
@@ -168,7 +175,60 @@ cor(th_fsm4, th_fsm) #0.971
 cor(th_lsm4,th_lsm) #0.98
 cor(th_del4,th_del) # 0.96
 
+### Compare marginal reliabilities
+#### Empirical marginal reliability is the ratio of variance of estimated theta, divided by sum of variance of theta + standard error
+##### From https://stats.stackexchange.com/questions/427631/difference-between-empirical-and-marginal-reliability-of-an-irt-model
 
 
+### Compare ability standard errors and thetas
+### Based on theta estimation
+mat=data.frame(cbind(th_u_se,th_bf_se[,c(1,5)]))
+names(mat)= c("theta_unidim", "se_unidimen", "theta_bf", "se_bf")
+empirical_rxx(th_u_se)
+empirical_rxx(th_bf_se)
+empirical_rxx(th_fsm_se)
+empirical_rxx(th_lsm_se)
+empirical_rxx(th_del_se)
 
+### Marginal based on assumption that theta is normal
+###### Only for unidimensional, lower than empirical
+marginal_rxx(model_unidim)
+marginal_rxx(m_fsm)
+marginal_rxx(m_lsm)
+marginal_rxx(m_del)
+
+
+### Compare information
+######## I am not sure what is happening with bifactor information, need to
+## what literature says and it is just weird
+theta= matrix(seq(-4,4,length.out=1000))
+tinfo_ud= testinfo(model_unidim,theta)
+tinfo_fsm= testinfo(m_fsm,theta)
+tinfo_lsm= testinfo(m_lsm,theta)
+tinfo_del= testinfo(m_del,theta)
+
+theta_3F=   matrix(cbind( theta,
+                          theta,
+                          theta,
+                          theta
+                        ), ncol=4)
+tinfo_bf= testinfo(bfactormod,theta_3F, degrees=c(0,90,90,90))
+tinfo_bf_f1= testinfo(bfactormod,theta_3F, degrees=c(90,0,90,90))
+tinfo_bf_f2= testinfo(bfactormod,theta_3F, degrees=c(90,90,0,90))
+tinfo_bf_f3= testinfo(bfactormod,theta_3F, degrees=c(90,90,90,0))
+# From https://files.eric.ed.gov/fulltext/ED228288.pdf; &
+# https://groups.google.com/g/mirt-package/c/RaSDKV0MPS4
+
+
+plot(theta,tinfo_bf, type="l")
+lines(theta,tinfo_ud , type="l",col="red")
+
+plot(theta,tinfo_bf_f1, type="l")
+lines(theta,tinfo_fsm , type="l",col="red")
+
+plot(theta,tinfo_bf_f2, type="l")
+lines(theta,tinfo_lsm , type="l",col="red")
+
+plot(theta,tinfo_bf_f3, type="l")
+lines(theta,tinfo_del , type="l",col="red")
 
