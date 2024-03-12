@@ -185,6 +185,7 @@ cor(th_del4,th_del) # 0.96
 mat=data.frame(cbind(th_u_se,th_bf_se[,c(1,5)]))
 names(mat)= c("theta_unidim", "se_unidimen", "theta_bf", "se_bf")
 empirical_rxx(th_u_se)
+# var(th_u_se[,1])/ (var(th_u_se[,1]) + (sum(th_u_se[,2])/nrow(th_u_se))^2)
 empirical_rxx(th_bf_se)
 empirical_rxx(th_fsm_se)
 empirical_rxx(th_lsm_se)

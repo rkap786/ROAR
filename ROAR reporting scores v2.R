@@ -60,7 +60,7 @@ n_distinct(df$subj)
 df_resp = df |>  getrespmatrix() |> drop_na()
 
 ## keep respondents who have answered all three subscales
-resp_list= df_resp |> select(subj) |> unique() |> as.vector()
+resp_list= df_resp |> dplyr::select(subj) |> unique() |> as.vector()
 resp_list= resp_list[[1]]
 
 df= df |> filter(subj %in% resp_list)
@@ -126,7 +126,7 @@ resp_mean = bind_cols(item=names(df_resp)[-1],
                   pr0=as.numeric(colMeans(df_resp[,-1])))
 resp = df |> dplyr::select(subj,item,correct)
 p_u = left_join(p_u,resp_mean)
-p_u = left_join(p_u,resp)
+
 
 probs = left_join(p_m,resp_mean)
 probs = left_join(probs,p_u)
