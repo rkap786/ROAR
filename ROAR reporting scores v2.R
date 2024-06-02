@@ -57,7 +57,7 @@ getrespmatrix= function(data) {
 
 table(df$block)
 n_distinct(df$subj)
-df_resp = df |>  getrespmatrix() |> drop_na()
+cor = df |>  getrespmatrix() |> drop_na()
 
 ## keep respondents who have answered all three subscales
 resp_list= df_resp |> dplyr::select(subj) |> unique() |> as.vector()
