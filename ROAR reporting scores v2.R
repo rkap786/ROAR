@@ -10,6 +10,8 @@ library(ggmirt)
 library(psych)
 library(Matrix)
 
+
+
 imv.binary<-function(y, #outcomes
                      p1,#baseline
                      p2 #enhanced
@@ -34,24 +36,12 @@ imv.binary<-function(y, #outcomes
 }
 
 setwd("/Users/radhika/Library/CloudStorage/GoogleDrive-rkap786@stanford.edu/My Drive/0. Projects - Stanford/ROAR/")
+source("PA/ROAR/cat.functions.R")
 df= read_csv("PA data/roar_pa_trialdata.csv")
 df = df[,-1]
 df = df |> mutate(removed = ifelse(is.na(removed), 0, removed)) |>
   rename(item= itemId)
 
-
-
-
-getrespmatrix= function(data) {
-  data = data |>
-    dplyr::select(subj,item,correct) |>
-    pivot_wider(values_from= correct,
-                names_from = item)
-  
-  #names(data) = paste0("item",names(data))
-  #names(data)[1] = "personID"
-  data
-}
 
 
 
