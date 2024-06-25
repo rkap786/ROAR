@@ -6,6 +6,7 @@ library(readxl)
 library(dplyr)
 library(catR)
 library(Metrics)
+library(readr)
 
 ############################################################
 
@@ -44,13 +45,16 @@ names(th_u_roar)=c("th","subj")
 coef = coef(model_unidim, simplify=T)$items
 coef[,2]= -coef[,2]
 coef=data.frame(coef)
-coef$block = rownames(coef)
+coef$itemId = rownames(coef)
+#### Save item parameter file
+write_csv(coef,"PA/Data/itemparam_overall_unidim.csv")
+
 
 item.bank.overall=list()
 #del, fsm, lsm
-item.bank.overall[['DEL']]=coef |> filter(str_detect(block,"DEL") ) |> dplyr::select(-block)
-item.bank.overall[['FSM']]=coef |> filter(str_detect(block,"FSM") ) |> dplyr::select(-block)
-item.bank.overall[['LSM']]=coef |> filter(str_detect(block,"LSM") ) |> dplyr::select(-block)
+item.bank.overall[['DEL']]=coef |> filter(str_detect(itemId,"DEL") ) |> dplyr::select(-itemId)
+item.bank.overall[['FSM']]=coef |> filter(str_detect(itemId,"FSM") ) |> dplyr::select(-itemId)
+item.bank.overall[['LSM']]=coef |> filter(str_detect(itemId,"LSM") ) |> dplyr::select(-itemId)
 
 
 th_merged= merge(th_u_roar, CTOPP_scores, by="subj")
@@ -69,13 +73,19 @@ subj.list= unique(resp_del$subj)
 df = data |> select(-subj)
 
 ## Unidim model overall
-m_dim= mirt(df,1,  itemtype = 'Rasch')
+m_dim= mirt(df,1,  itemtype = 'Rasch', guess= 0.3)
 th= fscores(m_dim, method = "EAP",theta_lim = c(-4, 4))
 th_se=fscores(m_dim, full.scores.SE=TRUE,method = "EAP",theta_lim = c(-4, 4))
 rel=empirical_rxx(as.matrix(tibble(F1 = th_se[,1], SE_F1 = th_se[,2])))
 th_dims=data.frame(th)
 coef_dims = coef(m_dim, simplify=T)$items
 coef_dims[,2]= -coef_dims[,2] #convert easiness to difficulty
+
+coef_output= data.frame(coef_dims) |>
+  mutate(itemId = rownames(coef_dims))
+filename= paste0("PA/Data/irtparam_", subtask, ".csv")
+write_csv(coef_output,filename)
+
 names(th_dims)= c("th1")
 subj_final=data$subj
 th_dims$subj=data$subj
@@ -110,6 +120,12 @@ results.compare= results.compare |>
 ## Add in true values
 results.compare= left_join(results.compare,th_dims)
 result.merged[[subtask]]=results.compare
+
+## This is more useful after stopping rule is applied
+final.theta.unidim= bind_rows(list(results[[2]], results_random[[2]]),.id="type")
+final.theta.unidim= final.theta.unidim |> 
+  mutate(type=if_else(type==1,"CAT","Random")) |>
+  rename(subj=pid)
 
 }
 
